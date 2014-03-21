@@ -54,11 +54,12 @@ var DRAW_TIME_MAX          = exports.DRAW_TIME_MAX          = 60;
 var ANSWER_TIME_MIN        = exports.ANSWER_TIME_MIN        = 15;
 var ANSWER_TIME_MAX        = exports.ANSWER_TIME_MAX        = 60;
 
-var TOKEN_EXPIRED_TIME_BUFFER = 60;
+// hack : ダイアログの表示時間を制御できるようになるまではここで時間切れを調整
+var TOKEN_EXPIRED_TIME_BUFFER = 120;
 
 var INDEX_ROOM = 'index';
 
-// hack : 進行中と終了したゲームの管理を統合する
+// hack : 進行中と終了したゲームの管理を統合する？
 var games = {};
 var endGames = {};
 var tokens = {};
@@ -67,7 +68,7 @@ var globalUserCount = 0;
 
 var performanceLogger = setInterval(function () {
     logger.info('connectionCount: ' + globalUserCount + ', memoryUsage: ' + JSON.stringify(process.memoryUsage()));
-}, 10000);
+}, 20000);
 
 // hack : 起動時の読み込み処理が同期処理だとデータサイズが大きくなった場合に困る
 // 進行中のゲームの読込
@@ -742,11 +743,27 @@ exports.onConnection = function (client) {
                     });
                 });
 
-                callback({
-                    result: RESULT_OK,
-                    gameId: doc._id,
-                    answer: doc.answer,
-                    files:  files,
+                // hack : とりあえず最新20件に制限
+                var otherAnswers = [];
+                var query = db.Answer.find({ game_id: tokenInfo.gameId })
+                                     .limit(20)
+                                     .sort({ registered_time: 'desc' });
+                query.exec(function (err, docs) {
+                    if (err) {
+                        logger.error(err);
+                        return callback({ result: RESULT_SYSTEM_ERROR });
+                    }
+                    docs.forEach(function (doc) {
+                        otherAnswers.push(doc.answer);
+                    });
+
+                    callback({
+                        result:       RESULT_OK,
+                        gameId:       doc._id,
+                        answer:       doc.answer,
+                        otherAnswers: otherAnswers,
+                        files:        files,
+                    });
                 });
             });
         });
@@ -1035,8 +1052,8 @@ function getEndGameList () {
 
     var gameList = [];
     var keys = Object.keys(endGames);
-    // hack : とりあえず最新20件のみ表示
-    var limit = Math.max(0, keys.length - 20);
+    // hack : とりあえず最新50件のみ表示
+    var limit = Math.max(0, keys.length - 50);
     for (var i = keys.length - 1; limit <= i; i -= 1) {
         var game = endGames[keys[i]];
         gameList.push({

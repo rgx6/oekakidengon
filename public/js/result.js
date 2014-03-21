@@ -27,12 +27,15 @@
 
         var gameId;
         var answer;
+        var otherAnswers;
         var files;
         var now;
 
         //------------------------------
         // 準備
         //------------------------------
+
+        $('#showOtherAnswers').css('display', 'none');
 
         if (!canvas.getContext) {
             alert('ブラウザがCanvasに対応してないよ(´・ω・｀)');
@@ -69,9 +72,10 @@
                     alert('不正なトークンです');
                     windowClose();
                 } else if (res.result === RESULT_OK) {
-                    gameId = res.gameId;
-                    answer = res.answer;
-                    files = res.files;
+                    gameId       = res.gameId;
+                    answer       = res.answer;
+                    otherAnswers = res.otherAnswers;
+                    files        = res.files;
                     now = 0;
                     showImage();
                 } else {
@@ -86,14 +90,35 @@
         //------------------------------
 
         /**
-         * 答えを表示
+         * 答えを見るボタン クリックイベント
          */
-        $('#answer').on('click', function (e) {
+        $('#showAnswer').on('click', function (e) {
             'use strict';
             // console.log('#answer click');
             e.stopPropagation();
 
+            $('#showAnswer').css('display', 'none');
+            $('#showOtherAnswers').css('display', '');
             $('#answer').text('答え ： ' + answer);
+        });
+
+        /**
+         * みんなの解答を見るボタン クリックイベント
+         */
+        $('#showOtherAnswers').on('click', function (e) {
+            'use strict';
+            console.log('#showOtherAnswers click');
+            e.stopPropagation();
+
+            if (otherAnswers.length === 0) {
+                alert('まだ解答はありません');
+            } else {
+                var message = 'みんなの解答\n';
+                otherAnswers.forEach(function (answer) {
+                    message += '\n' + answer;
+                });
+                alert(message);
+            }
         });
 
         /**

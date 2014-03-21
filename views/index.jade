@@ -39,15 +39,19 @@ block body
                             br
                             | 最初の人はお題を見て絵を描きます。
                             br
-                            | 文字を描くのはNGです。
+                            | 文字を描くのは基本NGです。
                     li
                         h3 解答する
                         p
                             | 最後の人が描いた絵を見てお題を当てます。
+                            br
+                            | 自分が作ったor参加したゲームは解答できません。
                     li
                         h3 結果を見る
                         p
                             | みんなが描いた絵を見ます。
+                            br
+                            | 見ると解答できなくなります。
 
         div.row
             div.col-xs-6
@@ -112,7 +116,7 @@ block body
 
         div.row
             div.col-xs-12
-                h2 終了したゲーム（最新20件）
+                h2 終了したゲーム（最新50件）
                 button.updateGameList.btn.btn-default(type="button") 更新
                 table#endGameList.table.table-striped.table-condensed
                     thead

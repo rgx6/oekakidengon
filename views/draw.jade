@@ -1,0 +1,42 @@
+extends layout
+block head
+    link(type="text/css", rel="stylesheet", href="/css/style.css")
+    script(type="application/javascript", src="/socket.io/socket.io.js")
+    script(type="application/javascript", src="/js/jquery-2.1.0.min.js")
+    script(type="application/javascript", src="/js/draw.js")
+block body
+    div#header
+        div#pallet.pallet
+            div#color1.selectedColor
+            div#color2
+            div#color3
+            div#color4
+            div#color5
+            div#color6
+            div#color7
+            div#color8
+            div#color9
+        div#brushSize.brushSize
+            canvas#brush1(width="34px", height="34px")
+            canvas#brush3(width="34px", height="34px")
+            canvas#brush5(width="34px", height="34px").selectedSize
+            canvas#brush10(width="34px", height="34px")
+            canvas#brush15(width="34px", height="34px")
+        div.function
+            label#clear クリア
+        div.clear
+    div#body
+        div#timeLeft
+            label
+        div#canvas
+            canvas#drawCanvas(width="640px", height="480px")
+            canvas#cursorCanvas(width="640px", height="480px")
+    div#footer
+        div.left
+            div.function
+                label#exit.left 中断
+        div.right
+            div.function
+                label#viewDone.right 描く
+                label#drawDone.right 送信
+        div.clear

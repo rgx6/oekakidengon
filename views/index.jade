@@ -1,0 +1,130 @@
+extends layout
+block head
+    link(type="text/css", rel="stylesheet", href="/css/bootstrap.min.css")
+    link(type="text/css", rel="stylesheet", href="/css/colorbox.css")
+    script(type="application/javascript", src="/js/jquery-2.1.0.min.js")
+    script(type="application/javascript", src="/js/jquery.colorbox-min.js")
+    script(type="application/javascript", src="/js/bootstrap.min.js")
+    script(type="application/javascript", src="/socket.io/socket.io.js")
+    script(type="application/javascript", src="/js/index.js")
+block body
+    div.container(style="max-width: none; important; width: 970px;") 
+        div.jumbotron
+            h1= title
+
+        div.row
+            div.col-xs-6
+                form.form-horizontal(role="form")
+                    div.form-group
+                        label.col-xs-3.control-label(for="playerName") プレイヤー名
+                        div.col-xs-9
+                            input#playerName.form-control(type="text", maxlength="#{playerNameLengthMax}",
+                                placeholder="#{playerNameLengthMax}文字以内")
+
+        div.row
+            div.col-xs-12
+                h2 どんなゲーム？
+                p 伝言ゲームのお絵かき版です。
+                ul
+                    li
+                        h3 ゲームを作る
+                        p
+                            | お題を決めてゲームを作ります。
+                            br
+                            | みんな知っていそうなもの、抽象的すぎないもの推奨。
+                    li
+                        h3 参加する
+                        p
+                            | 前の人が描いた絵を見て、それが何なのか推測して、次の人に絵で伝えます。
+                            br
+                            | 最初の人はお題を見て絵を描きます。
+                            br
+                            | 文字を描くのはNGです。
+                    li
+                        h3 解答する
+                        p
+                            | 最後の人が描いた絵を見てお題を当てます。
+                    li
+                        h3 結果を見る
+                        p
+                            | みんなが描いた絵を見ます。
+
+        div.row
+            div.col-xs-6
+                h2 ゲームを作る
+                form.form-horizontal(role="form")
+                    div.form-group
+                        label.col-xs-3.control-label(for="newGameAnswer") お題
+                        div.col-xs-9
+                            input#newGameAnswer.form-control(type="text", maxlength="#{answerLengthMax}",
+                                placeholder="#{answerLengthMax}文字以内  必須")
+                    // div.form-group
+                    //     label.col-xs-3.control-label(for="newGameRound") ラウンド数
+                    //     div.col-xs-9
+                    //         input#newGameRound.form-control(type="number", min="#{roundMin}", max="#{roundMax}",
+                    //             placeholder="#{roundMin}～#{roundMax}ラウンド")
+                    div.form-group
+                        label.col-xs-3.control-label(for="newGameName") ゲーム名
+                        div.col-xs-9
+                            input#newGameName.form-control(type="text", maxlength="#{gameNameLengthMax}",
+                                placeholder="#{gameNameLengthMax}文字以内")
+                    // div.form-group
+                    //     label.col-xs-3.control-label(for="newGameViewTime") 見る時間
+                    //     div.col-xs-9
+                    //         input#newGameViewTime.form-control(type="number", min="#{viewTimeMin}", max="#{viewTimeMax}",
+                    //             placeholder="#{viewTimeMin}～#{viewTimeMax}秒")
+                    // div.form-group
+                    //     label.col-xs-3.control-label(for="newGameDrawTime") 描く時間
+                    //     div.col-xs-9
+                    //         input#newGameDrawTime.form-control(type="number", min="#{drawTimeMin}", max="#{drawTimeMax}",
+                    //             placeholder="#{drawTimeMin}～#{drawTimeMax}秒")
+                    // div.form-group
+                    //     label.col-xs-3.control-label(for="newGameAnswerTime") 答える時間
+                    //     div.col-xs-9
+                    //         input#newGameAnswerTime.form-control(type="number", min="#{answerTimeMin}", max="#{answerTimeMax}",
+                    //             placeholder="#{answerTimeMin}～#{answerTimeMax}秒")
+                    div.form-group
+                        label.col-xs-3.control-label(for="newGameComment") コメント
+                        div.col-xs-9
+                            input#newGameComment.form-control(type="text", maxlength="#{commentLengthMax}",
+                                placeholder="#{commentLengthMax}文字以内")
+                    // div.form-group
+                    //     label.col-xs-3.control-label(for="newGamePassword") パスワード
+                    //     div.col-xs-9
+                    //         input#newGamePassword.form-control(type="text", maxlength="#{passwordLengthMax}",
+                    //             placeholder="#{passwordLengthMax}文字以内")
+                    div.form-group
+                        div.col-xs-offset-1
+                            button#startButton.btn.btn-primary(type="button") ゲームを作る
+
+        div.row
+            div.col-xs-12
+                h2 進行中のゲーム（最大20件まで）
+                button.updateGameList.btn.btn-default(type="button") 更新
+                table#gameList.table.table-striped.table-condensed
+                    thead
+                        tr
+                            th ゲーム名
+                            // th パスワード
+                            th ラウンド
+                            th コメント
+                    tbody
+
+        div.row
+            div.col-xs-12
+                h2 終了したゲーム（最新20件）
+                button.updateGameList.btn.btn-default(type="button") 更新
+                table#endGameList.table.table-striped.table-condensed
+                    thead
+                        tr
+                            th ゲーム名
+                            th ラウンド
+                            th コメント
+                    tbody
+
+        div.row
+            div.col-xs-12
+                h2 お問い合わせ
+                p
+                    a(href="https://twitter.com/rgx_6") @rgx_6
+                    | まで

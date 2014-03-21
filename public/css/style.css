@@ -1,0 +1,189 @@
+/**
+ * 共通
+ */
+body {
+    margin: 0;
+    padding: 0;
+}
+
+.clear {
+    clear: both;
+}
+
+#header {
+    width: 740px;
+    height: 50px;
+    background-color: #50687e;
+    /*4F5E67*/
+    /*50687e*/
+}
+
+#body {
+    position: relative;
+    width: 740px;
+    height: 580px;
+    background-color: #d1d1d1;
+    /*#C2B49A*/
+    /*d1d1d1*/
+}
+
+#footer {
+    position: relative;
+    width: 740px;
+    height: 50px;
+    background-color: #50687e;
+}
+
+.left {
+    float: left;
+    margin-left: 4px;
+}
+
+.right {
+    float: right;
+    margin-right: 4px;
+}
+
+.message {
+    /*float: left;*/
+    height: 50px;
+    color: #000000;
+    font-size: 34px;
+    line-height: 50px;
+}
+
+/**
+ * パレット
+ */
+.pallet {
+    float: left;
+    margin-left: 8px;
+}
+
+.pallet>div {
+    float: left;
+    width: 34px;
+    height: 34px;
+    margin-top: 4px;
+    border: solid 4px #50687e;
+    cursor: pointer;
+}
+
+#color1 { background-color: #000000; }
+#color2 { background-color: #ffffff; }
+#color3 { background-color: #808080; }
+#color4 { background-color: #e00000; }
+#color5 { background-color: #00e000; }
+#color6 { background-color: #0000e0; }
+#color7 { background-color: #e000e0; }
+#color8 { background-color: #e0e000; }
+#color9 { background-color: #00e0e0; }
+
+/**
+ * ブラシサイズ
+ */
+.brushSize {
+    float: left;
+    margin-left: 20px;
+}
+
+.brushSize canvas {
+    float: left;
+    margin-top: 4px;
+    border: solid 4px #50687e;
+    cursor: pointer;
+}
+
+.brushSize>.selectedSize {
+    border-color: #000000;
+}
+
+/**
+ * 機能
+ */
+
+.function label {
+    float: right;
+    display: block;
+    cursor: pointer;
+    padding: 0 10px;
+    height: 34px;
+    margin: 8px;
+    background-color: #3C3C49;
+    /*#2980b9*/
+    color: #ffffff;
+    font-size: 17px;
+    text-align: center;
+    line-height: 34px;
+}
+
+.function label:hover {
+    border-color: #3498db;
+    background-color: #3498db;
+}
+
+/**
+ * canvas
+ */
+#canvas {
+    position: absolute;
+    width: 740px;
+    height: 580px;
+}
+
+#drawCanvas {
+    position: absolute;
+    top:  50px;
+    left: 50px;
+}
+
+#cursorCanvas {
+    position: absolute;
+    top:  50px;
+    left: 50px;
+}
+
+/**
+ * 残り時間
+ */
+
+#timeLeft {
+    float: left;
+    margin-left: 8px;
+}
+
+#timeLeft label {
+    float: left;
+    height: 50px;
+    color: #000000;
+    font-size: 34px;
+    line-height: 50px;
+}
+
+/**
+ * 解答欄
+ */
+
+.answer {
+    float: left;
+    margin-left: 8px;
+}
+
+.answer label {
+    float: left;
+    height: 50px;
+    color: #000000;
+    font-size: 34px;
+    line-height: 50px;
+}
+
+.answer input {
+    float: left;
+    height: 40px;
+    color: #000000;
+    background-color: #d1d1d1;
+    font-size: 25px;
+    line-height: 40px;
+    margin: 4px 0;
+    border: 0;
+}

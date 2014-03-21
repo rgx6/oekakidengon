@@ -1,0 +1,26 @@
+extends layout
+block head
+    link(type="text/css", rel="stylesheet", href="/css/style.css")
+    script(type="application/javascript", src="/socket.io/socket.io.js")
+    script(type="application/javascript", src="/js/jquery-2.1.0.min.js")
+    script(type="application/javascript", src="/js/answer.js")
+block body
+    div#header
+        div.answer
+            label(for="answer") 解答&nbsp：&nbsp;
+            input#answer(type="text", size="#{Math.floor(answerLengthMax * 2.5)}", maxlength="#{answerLengthMax}",
+                placeholder="#{answerLengthMax}文字以内")
+        div.right
+            div.function
+                label#answerDone 送信
+        div.clear
+    div#body
+        div#timeLeft
+            label
+        div#canvas
+            canvas#drawCanvas(width="640px", height="480px")
+    div#footer
+        div.left
+            div.function
+                label#exit 中断
+        div.clear

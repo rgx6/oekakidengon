@@ -56,6 +56,14 @@ exports.draw = function (req, res) {
     });
 };
 
+exports.watch = function (req, res) {
+    'use strict';
+
+    res.render('watch', {
+        title: appTitle,
+    });
+};
+
 exports.answer = function (req, res) {
     'use strict';
 

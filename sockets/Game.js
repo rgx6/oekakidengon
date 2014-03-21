@@ -33,31 +33,24 @@
             this.round      = round;
             // 現在のラウンド用のトークン
             this.roundToken = null;
+            // 現在のラウンドのプレイヤーのID
+            this.roundPlayerId = null;
 
             // お絵かきログ
             this.imagelog = [];
         }
 
-        // todo : 実装
-        /**
-         * 送られてきた描画データを処理する
-         */
-        // Game.prototype.procImage = function (data, playerName) {
-        //     if (data.length === 1 && data[0].type === 'fill') {
-        //         this.imagelog.length = 0;
-        //         this.imagelog.push(data);
-        //     }
-        //     else {
-        //         this.imagelog.push(data);
-        //     }
+        Game.prototype.storeImage = function (data) {
+            'use strict';
 
-        //     // 通信量削減のため描いた人には送らない
-        //     for (var i = 0; i < this.players.length; i += 1) {
-        //         if (this.players[i].name !== playerName) {
-        //             this.players[i].socket.emit('push image', data);
-        //         }
-        //     }
-        // };
+            this.imagelog.push(data);
+        };
+
+        Game.prototype.deleteImage = function () {
+            'use strict';
+
+            this.imagelog.length = 0;
+        };
 
         return Game;
     })();

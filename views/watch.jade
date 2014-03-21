@@ -1,0 +1,26 @@
+extends layout
+block head
+    link(type="text/css", rel="stylesheet", href="/css/style.css")
+    script(type="application/javascript", src="/socket.io/socket.io.js")
+    script(type="application/javascript", src="/js/jquery-2.1.0.min.js")
+    script(type="application/javascript", src="/js/watch.js")
+block body
+    div#header
+        div.left
+            label#answer.message
+        div.right
+            div.function
+                label#showAnswer 答えを見る
+        div.clear
+    div#body
+        div.left
+            label#drawer.message
+        div.right
+            label#round.message
+        div#canvas
+            canvas#drawCanvas(width="640px", height="480px")
+    div#footer
+        div.left
+            div.function
+                label#exit.left 戻る
+        div.clear

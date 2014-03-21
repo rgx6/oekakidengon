@@ -62,6 +62,7 @@ app.use(function (req, res) {
 var appRoot = '/';
 app.get(appRoot, routes.index);
 app.get(appRoot + 'draw', routes.draw);
+app.get(appRoot + 'watch', routes.watch);
 app.get(appRoot + 'answer', routes.answer);
 app.get(appRoot + 'result', routes.result);
 

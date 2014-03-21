@@ -219,7 +219,7 @@
                 } else if (data.result === RESULT_PLAYED_GAME) {
                     alert('参加済のゲームです');
                 } else if (data.result === RESULT_WATCHED_GAME) {
-                    alert('観戦したゲームには参加できません');
+                    alert('見物したゲームには参加できません');
                 } else if (data.result === RESULT_PASSWORD_NG) {
                     alert('パスワードが違います');
                 } else if (data.result === RESULT_NOW_PLAYING) {
@@ -240,6 +240,52 @@
                         open: true,
                         overlayClose: false,
                         escKey: false,
+                    });
+                }
+                else {
+                    alert('予期しないエラーです');
+                }
+                isProcessing = false;
+            });
+        });
+
+        /**
+         * ゲーム参加リクエスト（見物）
+         */
+        $(document).on('click', '#watch', function () {
+            'use strict';
+            if (isProcessing) return;
+            isProcessing = true;
+            // console.log('#watch click');
+
+            var credentials = {
+                gameId:   $(this).parent().parent().attr('id'),
+                password: $(this).parent().parent().find('#joinGamePassword').val(),
+            };
+
+            socket.emit('request for watch', credentials, function (data) {
+                // console.log('request for watch callback');
+                // console.log(data);
+                if (data.result === RESULT_BAD_PARAM) {
+                    alert('不正なパラメータです');
+                } else if (data.result === RESULT_PASSWORD_NG) {
+                    alert('パスワードが違います');
+                } else if (data.result === RESULT_OK) {
+                    window.localStorage.setItem(KEY_TOKEN, data.token);
+
+                    var dom = $('<a />');
+                    dom.addClass('iframe cboxElement');
+                    dom.attr('href', '/watch');
+                    dom.css('display', 'none');
+                    dom.colorbox({
+                        iframe: true,
+                        innerWidth: '740px',
+                        innerHeight: '680px',
+                        transition: 'none',
+                        closeButton: false,
+                        open: true,
+                        // overlayClose: false,
+                        // escKey: false,
                     });
                 }
                 else {
@@ -271,7 +317,7 @@
                 } else if (data.result === RESULT_PLAYED_GAME) {
                     alert('参加したゲームには解答できません');
                 } else if (data.result === RESULT_WATCHED_GAME) {
-                    alert('観戦したゲームには解答できません');
+                    alert('見物したゲームには解答できません');
                 } else if (data.result === RESULT_ANSWERED_GAME) {
                     alert('解答済のゲームです');
                 } else if (data.result === RESULT_RESULT_VIEWED) {
@@ -377,7 +423,7 @@
                 html += '<td>' + (game.round + 1) + ' / ' + game.roundMax + '</td>';
                 html += '<td>' + game.comment + '</td>';
                 html += '<td><button id="draw" class="btn btn-primary">参加する</input></td>';
-                // html += '<td><button id="list" class="btn btn-primary">観戦する</input></td>';
+                html += '<td><button id="watch" class="btn btn-primary">見物する</input></td>';
                 html += '</tr>';
             }
             $('#gameList tbody').append(html);

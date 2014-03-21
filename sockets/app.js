@@ -22,6 +22,7 @@ var RESULT_SYSTEM_ERROR  = 'system error';
 
 var AUTHORITY_TYPE_DRAW_ENTER         = 'authority type draw enter';
 var AUTHORITY_TYPE_DRAW_SEND_IMAGE    = 'authority type draw send image';
+var AUTHORITY_TYPE_WATCH_ENTER        = 'authority type watch enter';
 var AUTHORITY_TYPE_ANSWER_ENTER       = 'authority type answer enter';
 var AUTHORITY_TYPE_ANSWER_SEND_ANSWER = 'authority type answer send answer';
 var AUTHORITY_TYPE_LIST_ENTER         = 'authority type list enter';
@@ -420,6 +421,7 @@ exports.onConnection = function (client) {
 
             var token = uuid.v4().replace(/-/g, '');
             game.roundToken = token;
+            game.roundPlayerId = playerId;
 
             tokens[token] = {
                 gameId:        data.gameId,
@@ -432,6 +434,54 @@ exports.onConnection = function (client) {
                 result: RESULT_OK,
                 token:  token,
             });
+        });
+    });
+
+    /**
+     * ゲーム参加リクエスト受付（見物）
+     */
+    client.on('request for watch', function (data, callback) {
+        'use strict';
+        logger.debug('request for watch : ' + client.id);
+        logger.trace(data);
+
+        var playerId;
+        client.get(KEY_PLAYER_ID, function (err, _playerId) {
+            if (err || !_playerId) {
+                logger.error(err);
+                return callback({ result: RESULT_SYSTEM_ERROR });
+            }
+            playerId = _playerId;
+        });
+
+        if (isUndefinedOrNull(data) || isUndefinedOrNull(data.gameId)) {
+            logger.warn('request for watch : ' + client.id + ' : ' + RESULT_BAD_PARAM);
+            return callback({ result: RESULT_BAD_PARAM });
+        }
+
+        var game = games[data.gameId];
+        if (isUndefinedOrNull(game)) {
+            logger.error('game not exists. gameId: ' + data.gameId);
+            return callback({ result: RESULT_SYSTEM_ERROR });
+        }
+
+        if (game.password && game.password !== data.password) {
+            logger.warn('request for watch : ' + client.id + ' : ' + RESULT_PASSWORD_NG);
+            return callback({ result: RESULT_PASSWORD_NG });
+        }
+
+        var token = uuid.v4().replace(/-/g, '');
+
+        tokens[token] = {
+            gameId:        data.gameId,
+            authorityType: AUTHORITY_TYPE_WATCH_ENTER,
+            expire:        new Date().getTime() + 10 * 1000,
+            playerId:      playerId,
+        };
+
+        callback({
+            result: RESULT_OK,
+            token:  token,
         });
     });
 
@@ -582,43 +632,141 @@ exports.onConnection = function (client) {
             }
             var newToken = uuid.v4().replace(/-/g, '');
             game.roundToken = newToken;
-    
-            if (game.round === 0) {
-                tokens[newToken] = {
-                    gameId:        tokenInfo.gameId,
-                    authorityType: AUTHORITY_TYPE_DRAW_SEND_IMAGE,
-                    expire:        new Date().getTime() + 1000 * (game.drawTime + TOKEN_EXPIRED_TIME_BUFFER),
-                    playerId:      tokenInfo.playerId,
-                };
-                callback({
-                    result:       RESULT_OK,
-                    token:        newToken,
-                    isFirstRound: true,
-                    answer:       game.answer,
-                    drawTime:     game.drawTime,
-                });
-            } else {
-                tokens[newToken] = {
-                    gameId:        tokenInfo.gameId,
-                    authorityType: AUTHORITY_TYPE_DRAW_SEND_IMAGE,
-                    expire:        new Date().getTime() + 1000 * (game.viewTime + game.drawTime + TOKEN_EXPIRED_TIME_BUFFER),
-                    playerId:      tokenInfo.playerId,
-                };
-                db.Game.findById(tokenInfo.gameId, function (err, doc) {
+            game.roundPlayerId = tokenInfo.playerId;
+
+            db.Player.findById(game.roundPlayerId, function (err, player) {
+                if (err) {
+                    logger.error(err);
+                    return callback({ result: RESULT_SYSTEM_ERROR });
+                }
+
+                if (game.round === 0) {
+                    tokens[newToken] = {
+                        gameId:        tokenInfo.gameId,
+                        authorityType: AUTHORITY_TYPE_DRAW_SEND_IMAGE,
+                        expire:        new Date().getTime() + 1000 * (game.drawTime + TOKEN_EXPIRED_TIME_BUFFER),
+                        playerId:      tokenInfo.playerId,
+                    };
+
+                    game.deleteImage();
+                    client.join(tokenInfo.gameId);
+                    var data = {
+                        round:      game.round + 1,
+                        roundMax:   game.roundMax,
+                        playerName: player.name,
+                    };
+                    client.broadcast.to(tokenInfo.gameId).emit('push init round', data);
+
+                    callback({
+                        result:       RESULT_OK,
+                        token:        newToken,
+                        isFirstRound: true,
+                        answer:       game.answer,
+                        drawTime:     game.drawTime,
+                    });
+                } else {
+                    tokens[newToken] = {
+                        gameId:        tokenInfo.gameId,
+                        authorityType: AUTHORITY_TYPE_DRAW_SEND_IMAGE,
+                        expire:        new Date().getTime() + 1000 * (game.viewTime + game.drawTime + TOKEN_EXPIRED_TIME_BUFFER),
+                        playerId:      tokenInfo.playerId,
+                    };
+                    db.Game.findById(tokenInfo.gameId, function (err, doc) {
+                        if (err) {
+                            logger.error(err);
+                            return callback({ result: RESULT_SYSTEM_ERROR });
+                        }
+
+                        game.deleteImage();
+                        client.join(tokenInfo.gameId);
+                        var data = {
+                            round:      game.round + 1,
+                            roundMax:   game.roundMax,
+                            playerName: player.name,
+                        };
+                        client.broadcast.to(tokenInfo.gameId).emit('push init round', data);
+
+                        callback({
+                            result:       RESULT_OK,
+                            token:        newToken,
+                            isFirstRound: false,
+                            fileName:     doc.rounds[doc.rounds.length - 1].file_name,
+                            viewTime:     game.viewTime,
+                            drawTime:     game.drawTime,
+                        });
+                    });
+                }
+            });
+        });
+    });
+
+    /**
+     * ページ表示後の初期化(見物)
+     */
+    client.on('init watch', function (data, callback) {
+        'use strict';
+        logger.debug('init watch : ' + client.id);
+        logger.trace(data);
+
+        if (isUndefinedOrNull(data) || isUndefinedOrNull(data.token)) {
+            logger.warn('init watch : ' + client.id + ' : ' + RESULT_BAD_PARAM);
+            return callback({ result: RESULT_BAD_PARAM });
+        }
+
+        var tokenInfo = tokens[data.token];
+        delete(tokens[data.token]);
+
+        if (isUndefinedOrNull(tokenInfo) ||
+            !checkToken(data.token, tokenInfo, AUTHORITY_TYPE_WATCH_ENTER)) {
+            logger.warn('init watch : ' + client.id + ' : ' + RESULT_INVALID_TOKEN);
+            return callback({ result: RESULT_INVALID_TOKEN });
+        }
+
+        var game = games[tokenInfo.gameId];
+        if (isUndefinedOrNull(game)) {
+            logger.error('game not exists. gameId: ' + tokenInfo.gameId);
+            return callback({ result: RESULT_SYSTEM_ERROR });
+        }
+
+        db.PlayLog.update({
+            game_id:   tokenInfo.gameId,
+            player_id: tokenInfo.playerId,
+            role:      ROLE_WATCH,
+        }, {
+            $setOnInsert: {
+                game_id:         tokenInfo.gameId,
+                player_id:       tokenInfo.playerId,
+                role:            ROLE_WATCH,
+                registered_time: new Date(),
+            },
+            $set: { updated_time: new Date() }
+        }, { upsert: true },
+        function (err, numberAffected) {
+            if (err) {
+                logger.error(err);
+                return callback({ result: RESULT_SYSTEM_ERROR });
+            }
+            db.Game.findById(tokenInfo.gameId, function (err, doc) {
+                if (err) {
+                    logger.error(err);
+                    return callback({ result: RESULT_SYSTEM_ERROR });
+                }
+                db.Player.findById(game.roundPlayerId, function (err, player) {
                     if (err) {
                         logger.error(err);
                         return callback({ result: RESULT_SYSTEM_ERROR });
                     }
+                    client.join(tokenInfo.gameId);
                     callback({
-                        result:       RESULT_OK,
-                        token:        newToken,
-                        isFirstRound: false,
-                        fileName:     doc.rounds[doc.rounds.length - 1].file_name,
-                        viewTime:     game.viewTime,
-                        drawTime:     game.drawTime,
+                        result:     RESULT_OK,
+                        answer:     doc.answer,
+                        round:      game.round + 1,
+                        roundMax:   game.roundMax,
+                        playerName: player.name,
+                        image:      game.imagelog,
                     });
                 });
-            }
+            });
         });
     });
 
@@ -687,13 +835,13 @@ exports.onConnection = function (client) {
     /**
      * ページ表示後の初期化(結果)
      */
-    client.on('init list', function (data, callback) {
+    client.on('init result', function (data, callback) {
         'use strict';
-        logger.debug('init list : ' + client.id);
+        logger.debug('init result : ' + client.id);
         logger.trace(data);
 
         if (isUndefinedOrNull(data) || isUndefinedOrNull(data.token)) {
-            logger.warn('init list : ' + client.id + ' : ' + RESULT_BAD_PARAM);
+            logger.warn('init result : ' + client.id + ' : ' + RESULT_BAD_PARAM);
             return callback({ result: RESULT_BAD_PARAM });
         }
 
@@ -702,7 +850,7 @@ exports.onConnection = function (client) {
 
         if (isUndefinedOrNull(tokenInfo) ||
             !checkToken(data.token, tokenInfo, AUTHORITY_TYPE_LIST_ENTER)) {
-            logger.warn('init list : ' + client.id + ' : ' + RESULT_INVALID_TOKEN);
+            logger.warn('init result : ' + client.id + ' : ' + RESULT_INVALID_TOKEN);
             return callback({ result: RESULT_INVALID_TOKEN });
         }
 
@@ -853,6 +1001,7 @@ exports.onConnection = function (client) {
         }
 
         game.roundToken = null;
+        game.roundPlayerId = null;
         return callback({ result: RESULT_OK });
     });
 
@@ -917,6 +1066,7 @@ exports.onConnection = function (client) {
                     // メモリ上のゲーム情報を更新
                     game.round += 1;
                     game.roundToken = null;
+                    game.roundPlayerId = null;
                     if (game.roundMax <= game.round) {
                         delete(games[tokenInfo.gameId]);
                         endGames[tokenInfo.gameId] = game;
@@ -927,6 +1077,74 @@ exports.onConnection = function (client) {
                 });
             });            
         });
+    });
+
+    /**
+     * 描いている絵を受け取る（描く->見物）
+     */
+    client.on('send drawing image', function (data) {
+        'use strict';
+        logger.debug('send drawing image : ' + client.id);
+        logger.trace(data);
+
+        // お絵かきの共有に失敗してもゲームの進行は止めたくないので、
+        // このメソッド内のエラーはclientにcallbackで返さない。
+
+        if (isUndefinedOrNull(data) || isUndefinedOrNull(data.token)) {
+            logger.warn('send drawing image : ' + client.id + ' : ' + RESULT_BAD_PARAM);
+            return;
+        }
+
+        var tokenInfo = tokens[data.token];
+
+        if (isUndefinedOrNull(tokenInfo) ||
+            !checkToken(data.token, tokenInfo, AUTHORITY_TYPE_DRAW_SEND_IMAGE)) {
+            logger.warn('send drawing image : ' + client.id + ' : ' + RESULT_INVALID_TOKEN);
+            return;
+        }
+
+        var game = games[tokenInfo.gameId];
+        if (isUndefinedOrNull(game)) {
+            logger.error('game not exists. gameId: ' + tokenInfo.gameId);
+            return;
+        }
+
+        game.storeImage(data.drawingImage);
+        client.broadcast.to(tokenInfo.gameId).emit('push drawing image', data.drawingImage);
+    });
+
+    /**
+     * Canvasのクリア（描く->見物）
+     */
+    client.on('clear canvas', function (data) {
+        'use strict';
+        logger.debug('clear canvas : ' + client.id);
+        logger.trace(data);
+
+        // お絵かきの共有に失敗してもゲームの進行は止めたくないので、
+        // このメソッド内のエラーはclientにcallbackで返さない。
+
+        if (isUndefinedOrNull(data) || isUndefinedOrNull(data.token)) {
+            logger.warn('clear canvas : ' + client.id + ' : ' + RESULT_BAD_PARAM);
+            return;
+        }
+
+        var tokenInfo = tokens[data.token];
+
+        if (isUndefinedOrNull(tokenInfo) ||
+            !checkToken(data.token, tokenInfo, AUTHORITY_TYPE_DRAW_SEND_IMAGE)) {
+            logger.warn('clear canvas : ' + client.id + ' : ' + RESULT_INVALID_TOKEN);
+            return;
+        }
+
+        var game = games[tokenInfo.gameId];
+        if (isUndefinedOrNull(game)) {
+            logger.error('game not exists. gameId: ' + tokenInfo.gameId);
+            return;
+        }
+
+        game.deleteImage();
+        client.broadcast.to(tokenInfo.gameId).emit('push clear canvas');
     });
 
     /**

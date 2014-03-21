@@ -26,9 +26,9 @@
         var timeLeft;
 
         // お絵かきデータの定期送信用タイマーオブジェクト
-        // var timer;
+        var drawTimer;
         // お絵かきデータの送信間隔(ミリ秒)
-        // var setTimeoutMillisecond = 500;
+        var setTimeoutMillisecond = 500;
 
         // お絵かきの変数
 
@@ -52,9 +52,9 @@
         var cursorContext;
 
         // お絵かきデータのbuffer
-        // var buffer = [];
+        var buffer = [];
         // お絵かきデータ送信用のタイマーがセットされているか
-        // var isBuffering = false;
+        var isBuffering = false;
 
         // 操作可否フラグ
         var isOperable = false;
@@ -160,7 +160,7 @@
             startX = Math.round(e.pageX) - $('#drawCanvas').offset().left;
             startY = Math.round(e.pageY) - $('#drawCanvas').offset().top;
             drawPoint(startX, startY, drawWidth, color);
-            // pushBuffer('point', drawWidth, color, { x: startX, y: startY });
+            pushBuffer('point', drawWidth, color, { x: startX, y: startY });
 
             // Chromeで描画中のマウスカーソルが I になるのを防ぐ。
             return false;
@@ -181,7 +181,7 @@
             if (!isDrawing) return drawCursor(endX, endY);
 
             drawLine([startX, endX], [startY, endY], drawWidth, color);
-            // pushBuffer('line', drawWidth, color, { xs: startX, ys: startY, xe: endX, ye: endY });
+            pushBuffer('line', drawWidth, color, { xs: startX, ys: startY, xe: endX, ye: endY });
             startX = endX;
             startY = endY;
         });
@@ -298,13 +298,13 @@
             if (!isOperable) return;
 
             // bufferを破棄
-            // buffer.length = 0;
-            // isBuffering = false;
+            buffer.length = 0;
+            isBuffering = false;
 
             // 描画不可
             isOperable = false;
             clearCanvas();            
-            // socket.emit('clear canvas');
+            socket.emit('clear canvas', { token: token });
             isOperable = true;
         });
 
@@ -526,7 +526,7 @@
             'use strict';
             // console.log('drawLine');
 
-            var offset = drawWidth % 2 === 0 ? 0 : 0.5;
+            var offset = width % 2 === 0 ? 0 : 0.5;
             context.strokeStyle = color;
             context.fillStyle = color;
             context.lineWidth = width;
@@ -567,57 +567,59 @@
         /**
          * お絵かき情報をbufferに溜める
          */
-        // todo : 実装
-        // function pushBuffer (type, width, color, data) {
-        //     'use strict';
-        //     // console.log('pushBuffer');
+        function pushBuffer (type, width, color, data) {
+            'use strict';
+            // console.log('pushBuffer');
 
-        //     if (buffer.length > 0 &&
-        //         buffer.slice(-1)[0].width === width &&
-        //         buffer.slice(-1)[0].color === color) {
-        //         if (type === 'line') {
-        //             buffer.slice(-1)[0].x.slice(-1)[0].push(data.xe);
-        //             buffer.slice(-1)[0].y.slice(-1)[0].push(data.ye);
-        //         } else if (type === 'point') {
-        //             buffer.slice(-1)[0].x.push( [data.x] );
-        //             buffer.slice(-1)[0].y.push( [data.y] );
-        //         }
-        //     } else {
-        //         if (type === 'line') {
-        //             buffer.push({
-        //                 width: width,
-        //                 color: color,
-        //                 x: [ [data.xs, data.xe] ],
-        //                 y: [ [data.ys, data.ye] ] });
-        //         } else if (type === 'point') {
-        //             buffer.push({
-        //                 width: width,
-        //                 color: color,
-        //                 x: [ [data.x] ],
-        //                 y: [ [data.y] ] });
-        //         }
-        //     }
+            if (buffer.length > 0 &&
+                buffer.slice(-1)[0].width === width &&
+                buffer.slice(-1)[0].color === color) {
+                if (type === 'line') {
+                    buffer.slice(-1)[0].x.slice(-1)[0].push(data.xe);
+                    buffer.slice(-1)[0].y.slice(-1)[0].push(data.ye);
+                } else if (type === 'point') {
+                    buffer.slice(-1)[0].x.push( [data.x] );
+                    buffer.slice(-1)[0].y.push( [data.y] );
+                }
+            } else {
+                if (type === 'line') {
+                    buffer.push({
+                        width: width,
+                        color: color,
+                        x: [ [data.xs, data.xe] ],
+                        y: [ [data.ys, data.ye] ] });
+                } else if (type === 'point') {
+                    buffer.push({
+                        width: width,
+                        color: color,
+                        x: [ [data.x] ],
+                        y: [ [data.y] ] });
+                }
+            }
 
-        //     if (!isBuffering) {
-        //         // console.log('isBuffering');
+            if (!isBuffering) {
+                // console.log('isBuffering');
 
-        //         isBuffering = true;
-        //         timer = setTimeout(function () { sendImage(); }, setTimeoutMillisecond);
-        //     }
-        // }
+                isBuffering = true;
+                drawTimer = setTimeout(function () { sendImage(); }, setTimeoutMillisecond);
+            }
+        }
 
         /**
          * bufferを送信する
          */
-        // todo : 実装
-        // function sendImage () {
-        //     'use strict';
-        //     // console.log('sendImage');
+        function sendImage () {
+            'use strict';
+            // console.log('sendImage');
 
-        //     socket.emit('send image', buffer);
-        //     buffer.length = 0;
-        //     isBuffering = false;
-        // }
+            var data = {
+                token:        token,
+                drawingImage: buffer,
+            };
+            socket.emit('send drawing image', data);
+            buffer.length = 0;
+            isBuffering = false;
+        }
 
         /**
          * 画像DataUrl取得メソッド

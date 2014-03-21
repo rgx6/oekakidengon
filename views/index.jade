@@ -32,6 +32,8 @@ block body
                             | お題を決めてゲームを作ります。
                             br
                             | みんな知っていそうなもの、抽象的すぎないもの推奨。
+                            br
+                            | できるだけひらがなで入力してください。
                     li
                         h3 参加する
                         p
@@ -41,11 +43,17 @@ block body
                             br
                             | 文字を描くのは基本NGです。
                     li
+                        h3 見物する
+                        p
+                            | ゲームの進行を見物します。
+                            br
+                            | 出入りは自由ですが、見物するとゲームに参加できなくなります。
+                    li
                         h3 解答する
                         p
                             | 最後の人が描いた絵を見てお題を当てます。
                             br
-                            | 自分が作ったor参加したゲームは解答できません。
+                            | 自分が作った or 参加した or 見物したゲームは解答できません。
                     li
                         h3 結果を見る
                         p
@@ -61,7 +69,7 @@ block body
                         label.col-xs-3.control-label(for="newGameAnswer") お題
                         div.col-xs-9
                             input#newGameAnswer.form-control(type="text", maxlength="#{answerLengthMax}",
-                                placeholder="#{answerLengthMax}文字以内  必須")
+                                placeholder="#{answerLengthMax}文字以内  ひらがな推奨  必須")
                     // div.form-group
                     //     label.col-xs-3.control-label(for="newGameRound") ラウンド数
                     //     div.col-xs-9

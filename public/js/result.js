@@ -61,8 +61,8 @@
             var data = { token: window.localStorage.getItem(KEY_TOKEN) };
             window.localStorage.removeItem(KEY_TOKEN);
 
-            socket.emit('init list', data, function (res) {
-                // console.log('init list callback');
+            socket.emit('init result', data, function (res) {
+                // console.log('init result callback');
                 // console.log(data);
 
                 if (res.result === RESULT_BAD_PARAM) {

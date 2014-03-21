@@ -756,13 +756,14 @@ exports.onConnection = function (client) {
                         logger.error(err);
                         return callback({ result: RESULT_SYSTEM_ERROR });
                     }
+                    var playerName = player ? player.name : '';
                     client.join(tokenInfo.gameId);
                     callback({
                         result:     RESULT_OK,
                         answer:     doc.answer,
                         round:      game.round + 1,
                         roundMax:   game.roundMax,
-                        playerName: player.name,
+                        playerName: playerName,
                         image:      game.imagelog,
                     });
                 });

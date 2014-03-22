@@ -211,6 +211,9 @@
             isProcessing = true;
             // console.log('#draw click');
 
+            $('#gameList tr.info').removeClass('info');
+            $(this).parent().parent().addClass('info');
+
             var credentials = {
                 gameId:   $(this).parent().parent().attr('id'),
                 password: $(this).parent().parent().find('#joinGamePassword').val(),
@@ -265,6 +268,9 @@
             isProcessing = true;
             // console.log('#watch click');
 
+            $('#gameList tr.info').removeClass('info');
+            $(this).parent().parent().addClass('info');
+
             var credentials = {
                 gameId:   $(this).parent().parent().attr('id'),
                 password: $(this).parent().parent().find('#joinGamePassword').val(),
@@ -310,6 +316,9 @@
             if (isProcessing) return;
             isProcessing = true;
             // console.log('#answer click');
+
+            $('#endGameList tr.info').removeClass('info');
+            $(this).parent().parent().addClass('info');
 
             var credentials = {
                 gameId: $(this).parent().parent().attr('id'),
@@ -363,6 +372,9 @@
             isProcessing = true;
             // console.log('#result click');
 
+            $('#endGameList tr.info').removeClass('info');
+            $(this).parent().parent().addClass('info');
+
             var credentials = {
                 gameId: $(this).parent().parent().attr('id'),
             };
@@ -395,6 +407,28 @@
                 }
                 isProcessing = false;
             });
+        });
+
+        /**
+         * ゲーム一覧の選択行の色変更
+         */
+        $(document).on('click', '#gameList tr', function () {
+            'use strict';
+            // console.log('#gameList tr', 'click');
+
+            $('#gameList tr.info').removeClass('info');
+            $(this).addClass('info');
+        });
+
+        /**
+         * 終了ゲーム一覧の選択行の色変更
+         */
+        $(document).on('click', '#endGameList tr', function () {
+            'use strict';
+            // console.log('#endGameList tr', 'click');
+
+            $('#endGameList tr.info').removeClass('info');
+            $(this).addClass('info');
         });
 
         /**

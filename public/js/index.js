@@ -153,6 +153,10 @@
                 alert('ラウンド数は数字で入力してください');
                 isProcessing = false;
                 return;
+            } else if (round !== '' && !round.match(/^[0-9]+$/)) {
+                alert('ラウンド数は整数で入力してください');
+                isProcessing = false;
+                return;
             } else if (round !== '' && (round < ROUND_MIN || ROUND_MAX < round)) {
                 alert('ラウンド数は' + ROUND_MIN + '～' + ROUND_MAX + 'で入力してください');
                 isProcessing = false;

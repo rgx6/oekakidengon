@@ -36,7 +36,7 @@ var ROLE_LIST   = 'list';
 var KEY_PLAYER_ID = 'playerId';
 
 var PLAYER_NAME_DEFAULT = '名無しさん';
-var ROUND_DEFAULT       = 5;
+var ROUND_DEFAULT       = exports.ROUND_DEFAULT = 5;
 var VIEW_TIME_DEFAULT   = 5;
 var DRAW_TIME_DEFAULT   = 30;
 var ANSWER_TIME_DEFAULT = 30;
@@ -235,8 +235,8 @@ exports.onConnection = function (client) {
             playerId = _playerId;
         });
 
-        // hack : とりあえず20件までに制限
-        if (Object.keys(games).length >= 20) {
+        // hack : とりあえず30件までに制限
+        if (Object.keys(games).length >= 30) {
             logger.warn('starg game : ' + client.id + ' : ' + RESULT_GAME_FULL);
             return callback({ result: RESULT_GAME_FULL });
         }
@@ -254,9 +254,9 @@ exports.onConnection = function (client) {
         if (isUndefinedOrNull(data)            ||
             isUndefinedOrNull(data.name)       ||
             isUndefinedOrNull(data.answer)     ||
-            isUndefinedOrNull(data.comment)
+            isUndefinedOrNull(data.comment)    ||
             // isUndefinedOrNull(data.password)   ||
-            // isUndefinedOrNull(data.round)      || isNaN(data.round)    ||
+            isUndefinedOrNull(data.round)      || isNaN(data.round)
             // isUndefinedOrNull(data.viewTime)   || isNaN(data.viewTime) ||
             // isUndefinedOrNull(data.drawTime)   || isNaN(data.drawTime) ||
             // isUndefinedOrNull(data.answerTime) || isNaN(data.answerTime)
@@ -269,20 +269,19 @@ exports.onConnection = function (client) {
         var answer     = data.answer.trim();
         var comment    = data.comment.trim();
         // var password   = data.password.trim();
-        // var round      = Number(data.round);
+        var round      = data.round;
         // var viewTime   = Number(data.viewTime);
         // var drawTime   = Number(data.drawTime);
         // var answerTime = Number(data.answerTime);
         var password   = '';
-        var round      = ROUND_DEFAULT;
         var viewTime   = VIEW_TIME_DEFAULT;
         var drawTime   = DRAW_TIME_DEFAULT;
         var answerTime = ANSWER_TIME_DEFAULT;
         if (!checkParamLength(name, 0, GAME_NAME_LENGTH_MAX)        ||
             !checkParamLength(answer, 1, ANSWER_LENGTH_MAX)         ||
-            !checkParamLength(comment, 0, COMMENT_LENGTH_MAX)
+            !checkParamLength(comment, 0, COMMENT_LENGTH_MAX)       ||
             // !checkParamLength(password, 0, PASSWORD_LENGTH_MAX)     ||
-            // !checkParamSize(round, ROUND_MIN, ROUND_MAX)            ||
+            !checkParamSize(round, ROUND_MIN, ROUND_MAX)
             // !checkParamSize(viewTime, VIEW_TIME_MIN, VIEW_TIME_MAX) ||
             // !checkParamSize(drawTime, DRAW_TIME_MIN, DRAW_TIME_MAX) ||
             // !checkParamSize(answerTime, ANSWER_TIME_MIN, ANSWER_TIME_MAX)
@@ -306,7 +305,7 @@ exports.onConnection = function (client) {
             // if (answer.length === 0) {
             //     answer = '未実装'
             // }
-    
+
             var game = new db.Game();
             game.name            = name;
             game.answer          = answer;

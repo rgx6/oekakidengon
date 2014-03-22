@@ -70,11 +70,11 @@ block body
                         div.col-xs-9
                             input#newGameAnswer.form-control(type="text", maxlength="#{answerLengthMax}",
                                 placeholder="#{answerLengthMax}文字以内  ひらがな推奨  必須")
-                    // div.form-group
-                    //     label.col-xs-3.control-label(for="newGameRound") ラウンド数
-                    //     div.col-xs-9
-                    //         input#newGameRound.form-control(type="number", min="#{roundMin}", max="#{roundMax}",
-                    //             placeholder="#{roundMin}～#{roundMax}ラウンド")
+                    div.form-group
+                        label.col-xs-3.control-label(for="newGameRound") ラウンド数
+                        div.col-xs-9
+                            input#newGameRound.form-control(type="number", min="#{roundMin}", max="#{roundMax}",
+                                placeholder="#{roundMin}～#{roundMax}ラウンド （デフォルト：#{roundDefault}）")
                     div.form-group
                         label.col-xs-3.control-label(for="newGameName") ゲーム名
                         div.col-xs-9
@@ -111,7 +111,7 @@ block body
 
         div.row
             div.col-xs-12
-                h2 進行中のゲーム（最大20件まで）
+                h2 進行中のゲーム（最大30件まで）
                 button.updateGameList.btn.btn-default(type="button") 更新
                 table#gameList.table.table-striped.table-condensed
                     thead

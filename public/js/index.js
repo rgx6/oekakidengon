@@ -1,40 +1,38 @@
 (function () {
     'use strict';
 
-    var RESULT_OK            = 'ok';
-    var RESULT_BAD_PARAM     = 'bad param';
-    var RESULT_PASSWORD_NG   = 'password ng';
-    var RESULT_GAME_FULL     = 'game full';
-    var RESULT_CREATE_MAX    = 'create max';
-    var RESULT_CREATED_GAME  = 'created game';
-    var RESULT_PLAYED_GAME   = 'played game';
-    var RESULT_WATCHED_GAME  = 'watched game';
-    var RESULT_ANSWERED_GAME = 'answered game';
-    var RESULT_RESULT_VIEWED = 'result viewed';
-    var RESULT_NOW_PLAYING   = 'now playing';
-    var RESULT_CANNOT_ANSWER = 'cannot answer';
-
-    var KEY_PLAYER_ID   = 'playerId';
-    var KEY_PLAYER_NAME = 'playerName';
-    var KEY_TOKEN       = 'token';
-
-    var socket;
-    var playerId;
-    var playerName;
-    var isProcessing = true;
-
-    var ANSWER_LENGTH_MAX;
-    var GAME_NAME_LENGTH_MAX;
-    var COMMENT_LENGTH_MAX;
-
     $(document).ready(function () {
+        'use strict';
         // console.log('ready');
 
-        ANSWER_LENGTH_MAX    = Number($('#newGameAnswer').attr('maxlength'));
-        GAME_NAME_LENGTH_MAX = Number($('#newGameName').attr('maxlength'));
-        COMMENT_LENGTH_MAX   = Number($('#newGameComment').attr('maxlength'));
+        var RESULT_OK            = 'ok';
+        var RESULT_BAD_PARAM     = 'bad param';
+        var RESULT_PASSWORD_NG   = 'password ng';
+        var RESULT_GAME_FULL     = 'game full';
+        var RESULT_CREATE_MAX    = 'create max';
+        var RESULT_CREATED_GAME  = 'created game';
+        var RESULT_PLAYED_GAME   = 'played game';
+        var RESULT_WATCHED_GAME  = 'watched game';
+        var RESULT_ANSWERED_GAME = 'answered game';
+        var RESULT_RESULT_VIEWED = 'result viewed';
+        var RESULT_NOW_PLAYING   = 'now playing';
+        var RESULT_CANNOT_ANSWER = 'cannot answer';
 
-        socket = io.connect();
+        var KEY_PLAYER_ID   = 'playerId';
+        var KEY_PLAYER_NAME = 'playerName';
+        var KEY_TOKEN       = 'token';
+
+        var playerId;
+        var playerName;
+        var isProcessing = true;
+
+        var ANSWER_LENGTH_MAX    = Number($('#newGameAnswer').attr('maxlength'));
+        var GAME_NAME_LENGTH_MAX = Number($('#newGameName').attr('maxlength'));
+        var COMMENT_LENGTH_MAX   = Number($('#newGameComment').attr('maxlength'));
+        var ROUND_MIN            = Number($('#newGameRound').attr('min'));
+        var ROUND_MAX            = Number($('#newGameRound').attr('max'));
+
+        var socket = io.connect();
 
         //------------------------------
         // メッセージハンドラ定義
@@ -138,6 +136,7 @@
             var answer   = $('#newGameAnswer').val().trim();
             var gameName = $('#newGameName').val().trim();
             var comment  = $('#newGameComment').val().trim();
+            var round    = $('#newGameRound').val().trim();
             if (answer.length === 0) {
                 alert('お題を入力してください');
                 isProcessing = false;
@@ -150,6 +149,14 @@
                 alert('ゲーム名が長過ぎます');
                 isProcessing = false;
                 return;
+            } else if (round !== '' && isNaN(round)) {
+                alert('ラウンド数は数字で入力してください');
+                isProcessing = false;
+                return;
+            } else if (round !== '' && (round < ROUND_MIN || ROUND_MAX < round)) {
+                alert('ラウンド数は' + ROUND_MIN + '～' + ROUND_MAX + 'で入力してください');
+                isProcessing = false;
+                return;
             } else if (comment.length > COMMENT_LENGTH_MAX) {
                 alert('コメントが長過ぎます');
                 isProcessing = false;
@@ -159,7 +166,7 @@
             var game = {
                 answer:     answer,
                 name:       gameName,
-                // round:      $('#newGameRound').val(),
+                round:      round === '' ? -1 : Number(round),
                 // viewTime:   $('#newGameViewTime').val(),
                 // drawTime:   $('#newGameDrawTime').val(),
                 // answerTime: $('#newGameAnswerTime').val(),
@@ -180,7 +187,7 @@
                 } else if (data.result === RESULT_OK) {
                     $('#newGameName').val('');
                     $('#newGameAnswer').val('');
-                    // $('#newGameRound').val('');
+                    $('#newGameRound').val('');
                     // $('#newGameViewTime').val('');
                     // $('#newGameDrawTime').val('');
                     // $('#newGameAnswerTime').val('');

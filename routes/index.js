@@ -19,6 +19,8 @@ var drawTimeMax         = app.DRAW_TIME_MAX;
 var answerTimeMin       = app.ANSWER_TIME_MIN;
 var answerTimeMax       = app.ANSWER_TIME_MAX;
 
+var roundDefault        = app.ROUND_DEFAULT;
+
 // エラーメッセージ
 var msgSystemError = 'システムエラー(´・ω・｀)';
 var msgInvalidUrl = 'そんなページないよ(´・ω・｀)';
@@ -45,6 +47,7 @@ exports.index = function (req, res) {
         drawTimeMax:         drawTimeMax,
         answerTimeMin:       answerTimeMin,
         answerTimeMax:       answerTimeMax,
+        roundDefault:        roundDefault,
     });
 };
 

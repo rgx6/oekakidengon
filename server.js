@@ -3,7 +3,7 @@ var http = require('http');
 var path = require('path');
 var log4js = require('log4js');
 var routes = require('./routes/index.js');
-var viewerapp = require('./sockets/app.js');
+var gameApp = require('./sockets/app.js');
 
 var logger = log4js.getLogger('OekakiDengon');
 logger.setLevel('DEBUG');
@@ -74,7 +74,7 @@ server.listen(app.get('port'), function () {
 
 // 'log lever' : 0 error  1 warn  2 info  3 debug / log: false
 var io = require('socket.io').listen(server, { 'log level': 2 });
-exports.sockets = io.sockets.on('connection', viewerapp.onConnection);
+exports.sockets = io.sockets.on('connection', gameApp.onConnection);
 
 // hack : 例外処理
 process.on('uncaughtException', function (err) {

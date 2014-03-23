@@ -269,7 +269,7 @@ exports.onConnection = function (client) {
         var answer     = data.answer.trim();
         var comment    = data.comment.trim();
         // var password   = data.password.trim();
-        var round      = Math.floor(data.round);
+        var round      = data.round === -1 ? ROUND_DEFAULT : Math.floor(data.round);
         // var viewTime   = Number(data.viewTime);
         // var drawTime   = Number(data.drawTime);
         // var answerTime = Number(data.answerTime);
